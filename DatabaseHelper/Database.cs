@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 
 namespace DatabaseHelper
 {
-    //შეეცადეთ გადააკეთოთ კლასი ისე, რომ არ იყოს დამოკიდებული მხოლოდ Sql Server-ზე
     public class Database<TConnection> : IDisposable, IDatabase where TConnection : IDbConnection, new()
     {
         private readonly bool _useSingleton;
@@ -158,12 +158,40 @@ namespace DatabaseHelper
             {
                 reader.Close();
             }
-            return table;            
+            return table;
         }
 
         public DataTable GetTable(string commandText, params IDataParameter[] parameters)
         {
             return GetTable(commandText, CommandType.Text, parameters);
+        }
+
+        public DbDataAdapter CreateDataAdapter()
+        {
+            DbProviderFactory factory = null;
+            factory = DbProviderFactories.GetFactory(_connection as DbConnection);
+
+            if (factory == null)
+            {
+                throw new ArgumentException("Could not locate factory matching supplied DbConnection", "connection");
+            }
+
+            return factory.CreateDataAdapter();
+        }
+
+        public DataSet GetTables(string commandText, CommandType commandType)
+        {
+            var dataAdapter = CreateDataAdapter();
+            dataAdapter.SelectCommand = GetCommand(commandText, commandType) as DbCommand;
+            DataSet dataSet = new DataSet();
+            dataAdapter.Fill(dataSet);
+
+            return dataSet;
+        }
+
+        public DataSet GetTables(string commandText)
+        {
+            return GetTables(commandText, CommandType.Text);
         }
 
         public void Dispose()
