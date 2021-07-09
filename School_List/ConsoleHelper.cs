@@ -115,7 +115,6 @@ namespace School_List
 
         public void Instruction()
         {
-            Console.WriteLine("For closing the application press ESC\n");
             Console.WriteLine("Press 1 for adding a Person");
             Console.WriteLine("Press 2 for removing a Person");
             Console.WriteLine("Press 3 for adding a Subject");
